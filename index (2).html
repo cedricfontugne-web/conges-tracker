@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Congés Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --secondary: #06b6d4;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface2: #f8fafc;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text2: #64748b;
+  --text3: #94a3b8;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 24px rgba(99,102,241,0.08);
+  --shadow-lg: 0 8px 40px rgba(99,102,241,0.15);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* HEADER GRADIENT */
+.header {
+  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  padding: 48px 24px 32px;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50%;
+}
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; left: 20px;
+  width: 100px; height: 100px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+}
+.header-label { font-size: 12px; color: rgba(255,255,255,0.75); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.header h1 { font-size: 28px; font-weight: 700; color: white; line-height: 1.2; }
+.header p { font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 6px; }
+
+/* CONTENT */
+.content { flex: 1; padding: 20px 16px 100px; max-width: 480px; margin: 0 auto; width: 100%; }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.card-title { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+
+/* METRICS */
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.metric { background: var(--surface); border-radius: var(--radius); padding: 16px; text-align: center; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.metric .val { font-size: 32px; font-weight: 700; line-height: 1; }
+.metric .lbl { font-size: 12px; color: var(--text2); margin-top: 4px; font-weight: 500; }
+
+/* PROGRESS */
+.progress-wrap { background: var(--bg); border-radius: 8px; height: 8px; overflow: hidden; margin: 8px 0 4px; }
+.progress-bar { height: 8px; border-radius: 8px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+
+/* BUTTONS */
+.btn {
+  display: block; width: 100%; padding: 15px;
+  border-radius: var(--radius-sm); border: none;
+  font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: linear-gradient(135deg, #6366f1, #06b6d4); color: white; box-shadow: 0 4px 16px rgba(99,102,241,0.35); margin-bottom: 10px; }
+.btn-primary:hover { box-shadow: 0 6px 24px rgba(99,102,241,0.45); }
+.btn-outline { background: white; border: 1.5px solid var(--border); color: var(--text); margin-bottom: 10px; }
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+.btn-success { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; }
+.btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+.btn-sm { display: inline-block; width: auto; padding: 8px 16px; font-size: 13px; margin: 0; }
+
+/* PILLS */
+.pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+.pill-blue { background: #e0e7ff; color: #3730a3; }
+.pill-green { background: #dcfce7; color: #15803d; }
+.pill-amber { background: #fef3c7; color: #92400e; }
+.pill-red { background: #fee2e2; color: #991b1b; }
+.pill-purple { background: #f3e8ff; color: #6b21a8; }
+
+/* NAV TABS */
+.nav-tabs { display: flex; gap: 6px; background: var(--surface); border-radius: var(--radius); padding: 6px; margin-bottom: 14px; box-shadow: var(--shadow); }
+.nav-tab { flex: 1; padding: 10px 6px; border-radius: var(--radius-sm); border: none; background: none; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.2s; text-align: center; }
+.nav-tab.active { background: linear-gradient(135deg, #6366f1, #06b6d4); color: white; box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
+
+/* PIN */
+.pin-dots { display: flex; gap: 14px; justify-content: center; margin: 20px 0; }
+.dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--primary); background: transparent; transition: all 0.2s; }
+.dot.filled { background: var(--primary); transform: scale(1.1); }
+.pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
+.pin-key { padding: 18px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: white; font-size: 22px; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; font-family: 'Outfit', sans-serif; }
+.pin-key:hover { border-color: var(--primary); color: var(--primary); background: #eef2ff; }
+.pin-key:active { transform: scale(0.95); }
+.pin-key.pin-ok { background: linear-gradient(135deg, #6366f1, #06b6d4); color: white; border-color: transparent; font-size: 14px; }
+.pin-key.pin-del { font-size: 14px; color: var(--text2); }
+
+/* USER SELECT */
+.user-btn { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; background: white; border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; margin-bottom: 10px; transition: all 0.2s; font-family: 'Outfit', sans-serif; }
+.user-btn:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(99,102,241,0.1); }
+.avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0; }
+.user-btn-info { text-align: left; }
+.user-btn-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.user-btn-role { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* ROWS */
+.row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--bg); }
+.row:last-child { border-bottom: none; padding-bottom: 0; }
+.row-label { font-size: 13px; color: var(--text2); }
+.row-value { font-size: 14px; font-weight: 600; color: var(--text); }
+
+/* FORM */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-input { width: 100%; padding: 13px 16px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); font-family: 'Outfit', sans-serif; font-size: 15px; color: var(--text); background: var(--surface); transition: border-color 0.2s; }
+.form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+.form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+/* ALERT */
+.alert { padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; margin-bottom: 12px; display: none; }
+.alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.alert-success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+
+/* TELEGRAM PREVIEW */
+.tg-bubble { background: #eef2ff; border-radius: 12px 12px 12px 4px; padding: 14px 16px; font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 10px; border-left: 3px solid var(--primary); }
+.tg-sender { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+.tg-actions { display: flex; gap: 8px; margin-top: 8px; }
+
+/* DEMAND CARD */
+.demand-card { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px; border: 1px solid var(--border); }
+.demand-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.demand-name { font-size: 14px; font-weight: 600; }
+.demand-dates { font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+.demand-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+/* BOTTOM NAV */
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); padding: 8px 16px 20px; display: flex; justify-content: space-around; z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); }
+.bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; border: none; background: none; font-family: 'Outfit', sans-serif; color: var(--text3); }
+.bnav-item.active { color: var(--primary); }
+.bnav-item svg { width: 22px; height: 22px; }
+.bnav-label { font-size: 10px; font-weight: 600; }
+
+/* CMD BADGE */
+.cmd-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--bg); }
+.cmd-row:last-child { border-bottom: none; }
+.cmd-code { font-family: monospace; font-size: 13px; color: var(--primary); font-weight: 700; background: #eef2ff; padding: 3px 8px; border-radius: 6px; }
+.cmd-desc { font-size: 12px; color: var(--text2); }
+
+/* ANIMATIONS */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.card, .metric, .demand-card { animation: fadeIn 0.3s ease; }
+
+.loader { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* BADGE TOTAL */
+.total-banner { background: linear-gradient(135deg, #eef2ff, #e0f2fe); border-radius: var(--radius-sm); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border: 1px solid #c7d2fe; }
+.total-banner .tb-label { font-size: 12px; color: #4338ca; font-weight: 600; }
+.total-banner .tb-val { font-size: 22px; font-weight: 700; color: #3730a3; }
+
+/* HISTORY ITEM */
+.hist-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--bg); }
+.hist-item:last-child { border-bottom: none; }
+.hist-dates { font-size: 13px; font-weight: 600; color: var(--text); }
+.hist-detail { font-size: 11px; color: var(--text2); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ===== SCREEN: LOGIN ===== -->
+<div id="screen-login" class="screen active">
+  <div class="header">
+    <div class="header-label">Gestion RH</div>
+    <h1>🏖️ Congés Tracker</h1>
+    <p>Sélectionnez votre profil pour continuer</p>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Qui êtes-vous ?</div>
+      <button class="user-btn" onclick="showPin('admin')">
+        <div class="avatar" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">A</div>
+        <div class="user-btn-info">
+          <div class="user-btn-name">Administrateur</div>
+          <div class="user-btn-role">Accès complet à tous les salariés</div>
+        </div>
+        <svg width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <div id="employee-list">
+        <!-- Rempli dynamiquement -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: PIN ===== -->
+<div id="screen-pin" class="screen">
+  <div class="header">
+    <div class="header-label" id="pin-user-label">Connexion</div>
+    <h1 id="pin-title">Code PIN</h1>
+    <p id="pin-subtitle">Entrez votre PIN à 4 chiffres</p>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="pin-dots">
+        <div class="dot" id="d1"></div>
+        <div class="dot" id="d2"></div>
+        <div class="dot" id="d3"></div>
+        <div class="dot" id="d4"></div>
+      </div>
+      <div id="pin-error" class="alert alert-danger" style="display:none; text-align:center;">PIN incorrect. Réessayez.</div>
+      <div class="pin-grid">
+        <button class="pin-key" onclick="pinPress(1)">1</button>
+        <button class="pin-key" onclick="pinPress(2)">2</button>
+        <button class="pin-key" onclick="pinPress(3)">3</button>
+        <button class="pin-key" onclick="pinPress(4)">4</button>
+        <button class="pin-key" onclick="pinPress(5)">5</button>
+        <button class="pin-key" onclick="pinPress(6)">6</button>
+        <button class="pin-key" onclick="pinPress(7)">7</button>
+        <button class="pin-key" onclick="pinPress(8)">8</button>
+        <button class="pin-key" onclick="pinPress(9)">9</button>
+        <button class="pin-key pin-del" onclick="pinPress('del')">⌫</button>
+        <button class="pin-key" onclick="pinPress(0)">0</button>
+        <button class="pin-key pin-ok" onclick="pinPress('ok')">OK</button>
+      </div>
+    </div>
+    <button class="btn btn-outline" onclick="showScreen('screen-login')">← Retour</button>
+
+    <!-- FIRST PIN SETUP -->
+    <div id="pin-setup" style="display:none;">
+      <div class="card" style="margin-top:14px; background:#fef3c7; border-color:#fde68a;">
+        <div class="card-title" style="color:#92400e;">Première connexion</div>
+        <p style="font-size:13px; color:#92400e; line-height:1.6;">Bienvenue ! Choisissez votre PIN à 4 chiffres. Vous l'utiliserez à chaque connexion.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: EMPLOYEE ===== -->
+<div id="screen-employee" class="screen">
+  <div class="header">
+    <div class="header-label" id="emp-greeting">Bonjour</div>
+    <h1 id="emp-name"></h1>
+    <p id="emp-period">Année : 1 mai 2025 → 30 avril 2026</p>
+  </div>
+  <div class="content" id="emp-content">
+    <!-- Rempli dynamiquement selon l'onglet actif -->
+  </div>
+  <nav class="bottom-nav">
+    <button class="bnav-item active" onclick="empTab('solde', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span class="bnav-label">Solde</span>
+    </button>
+    <button class="bnav-item" onclick="empTab('demande', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      <span class="bnav-label">Demande</span>
+    </button>
+    <button class="bnav-item" onclick="empTab('historique', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <span class="bnav-label">Historique</span>
+    </button>
+    <button class="bnav-item" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      <span class="bnav-label">Quitter</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ===== SCREEN: ADMIN ===== -->
+<div id="screen-admin" class="screen">
+  <div class="header">
+    <div class="header-label">Administration</div>
+    <h1>Tableau de bord</h1>
+    <p id="admin-sub">2 salariés actifs</p>
+  </div>
+  <div class="content" id="admin-content"></div>
+  <nav class="bottom-nav">
+    <button class="bnav-item active" onclick="adminTab('dashboard', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span class="bnav-label">Dashboard</span>
+    </button>
+    <button class="bnav-item" onclick="adminTab('demandes', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <span class="bnav-label">Demandes</span>
+    </button>
+    <button class="bnav-item" onclick="adminTab('salaries', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <span class="bnav-label">Salariés</span>
+    </button>
+    <button class="bnav-item" onclick="adminTab('telegram', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+      <span class="bnav-label">Telegram</span>
+    </button>
+  </nav>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURATION — à mettre à jour avec vos vraies données
+// ============================================================
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzbItjWblzhMjPvOVAy43ora0LcbbpLYbUubRIiYfi0LGgoWC8nn3fpMdhaZbtErt3RSQ/exec';
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  currentUser: null,
+  currentRole: null,
+  pinBuffer: [],
+  pinStep: 'enter',
+  pinTemp: [],
+  employees: [],
+  demandes: [],
+  loading: false,
+  isAdminViewingSalarie: false,
+};
+
+
+let demoData = {
+  employees: [
+    { id: 1, nom: 'Marine Orain', pin: '', pinSet: false, cpTotal: 30, cpPris: 30, samedisPris: 5, actif: true },
+    { id: 2, nom: 'Severine Parralejo', pin: '', pinSet: false, cpTotal: 30, cpPris: 26, samedisPris: 5, actif: true },
+  ],
+  admin: { pin: '9711' },
+  demandes: [
+    
+    
+    
+  ],
+};
+
+// ============================================================
+// GOOGLE SHEETS — Chargement et sauvegarde
+// ============================================================
+async function loadFromSheets() {
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=get_data&t=' + Date.now(), {
+      method: 'GET',
+      mode: 'cors',
+    });
+    const data = await res.json();
+    if (!data.salaries || data.salaries.length <= 1) return;
+
+    // Mettre à jour les employés depuis Sheets
+    const rows = data.salaries.slice(1);
+    rows.forEach(row => {
+      const nom = row[0];
+      // A=Nom(0) B=CPTotal(1) C=CPPris(2) D=CPRestants(3) E=Maladie(4) F=SamedisPris(5)
+      const cpTotal = parseFloat(row[1]) || 30;
+      const cpPris = parseFloat(row[2]) || 0;
+      const samPris = parseFloat(row[5]) || 0;
+      console.log('Sheets:', nom, 'cpTotal='+cpTotal, 'cpPris='+cpPris, 'sam='+samPris);
+      const emp = demoData.employees.find(e => e.nom === nom);
+      if (emp) {
+        emp.cpTotal = cpTotal;
+        emp.cpPris = cpPris;
+        emp.samedisPris = samPris;
+      }
+    });
+
+    // Mettre à jour les demandes depuis Sheets
+    if (data.demandes && data.demandes.length > 1) {
+      const demRows = data.demandes.slice(1);
+      demoData.demandes = demRows.map((r, i) => ({
+        id: r[0] || i,
+        employe: r[1], debut: r[2], fin: r[3],
+        joursOuvres: r[4], samedis: r[5],
+        statut: r[6], date: r[7]
+      }));
+    }
+
+    // Rafraîchir l'affichage si connecté
+    if (state.currentUser) {
+      const updated = demoData.employees.find(e => e.nom === state.currentUser.nom);
+      if (updated) {
+        state.currentUser = updated;
+        empTab('solde', null);
+      }
+    }
+  } catch(e) {
+    console.log('Erreur chargement Sheets:', e);
+  }
+}
+
+async function saveDemandeToSheets(employe, debut, fin, joursOuvres, samedis) {
+  try {
+    const url = SCRIPT_URL + '?action=nouvelle_demande' +
+      '&employe=' + encodeURIComponent(employe) +
+      '&debut=' + encodeURIComponent(debut) +
+      '&fin=' + encodeURIComponent(fin) +
+      '&joursOuvres=' + joursOuvres +
+      '&samedis=' + samedis;
+    await fetch(url);
+  } catch(e) {
+    console.log('Erreur sauvegarde Sheets:', e);
+  }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function logout() {
+  if (state.isAdminViewingSalarie) {
+    state.isAdminViewingSalarie = false;
+    state.currentUser = null;
+    showAdminScreen();
+    adminTab('salaries', document.querySelectorAll('#screen-admin .bnav-item')[2]);
+    return;
+  }
+  state.currentUser = null;
+  state.currentRole = null;
+  renderEmployeeList();
+  showScreen('screen-login');
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+function renderEmployeeList() {
+  const list = document.getElementById('employee-list');
+  list.innerHTML = demoData.employees.filter(e => e.actif).map(e => {
+    const initials = e.nom.split(' ').map(n => n[0]).join('');
+    const colors = ['linear-gradient(135deg,#06b6d4,#0891b2)', 'linear-gradient(135deg,#22c55e,#16a34a)', 'linear-gradient(135deg,#f59e0b,#d97706)', 'linear-gradient(135deg,#ef4444,#dc2626)'];
+    const color = colors[e.id % colors.length];
+    return `<button class="user-btn" onclick="showPin('employee', ${e.id})">
+      <div class="avatar" style="background:${color};">${initials}</div>
+      <div class="user-btn-info">
+        <div class="user-btn-name">${e.nom}</div>
+        <div class="user-btn-role">Salarié · ${e.pinSet ? 'PIN défini' : 'Première connexion'}</div>
+      </div>
+      <svg width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+    </button>`;
+  }).join('');
+}
+
+function showPin(role, empId) {
+  state.currentRole = role;
+  state.currentEmpId = empId || null;
+  state.pinBuffer = [];
+  state.pinStep = 'enter';
+  updateDots();
+  document.getElementById('pin-error').style.display = 'none';
+  document.getElementById('pin-setup').style.display = 'none';
+
+  if (role === 'admin') {
+    document.getElementById('pin-user-label').textContent = 'Administrateur';
+    document.getElementById('pin-title').textContent = 'Code PIN Admin';
+    document.getElementById('pin-subtitle').textContent = 'Entrez votre PIN administrateur';
+  } else {
+    const emp = demoData.employees.find(e => e.id === empId);
+    document.getElementById('pin-user-label').textContent = emp.nom;
+    document.getElementById('pin-title').textContent = emp.pinSet ? 'Code PIN' : 'Première connexion';
+    document.getElementById('pin-subtitle').textContent = emp.pinSet ? 'Entrez votre PIN à 4 chiffres' : 'Choisissez votre PIN à 4 chiffres';
+    if (!emp.pinSet) document.getElementById('pin-setup').style.display = 'block';
+  }
+  showScreen('screen-pin');
+}
+
+// ============================================================
+// PIN
+// ============================================================
+function pinPress(v) {
+  if (v === 'del') { 
+    state.pinBuffer.pop(); 
+    updateDots(); 
+    document.getElementById('pin-error').style.display = 'none';
+    return; 
+  }
+  if (v === 'ok') { 
+    if (state.pinBuffer.length === 4) validatePin(); 
+    return; 
+  }
+  if (state.pinBuffer.length < 4) { 
+    state.pinBuffer.push(v); 
+    updateDots(); 
+    // Auto-valider après 4 chiffres avec un léger délai
+    if (state.pinBuffer.length === 4) {
+      setTimeout(() => validatePin(), 300);
+    }
+  }
+}
+
+function updateDots() {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('d' + i).classList.toggle('filled', i <= state.pinBuffer.length);
+  }
+}
+
+function validatePin() {
+  const entered = state.pinBuffer.join('');
+  if (state.currentRole === 'admin') {
+    if (entered === demoData.admin.pin) { showAdminScreen(); }
+    else { showPinError(); }
+    return;
+  }
+  const emp = demoData.employees.find(e => e.id === state.currentEmpId);
+  if (!emp.pinSet) {
+    if (state.pinStep === 'enter') {
+      state.pinTemp = [...state.pinBuffer];
+      state.pinStep = 'confirm';
+      state.pinBuffer = [];
+      updateDots();
+      document.getElementById('pin-subtitle').textContent = 'Confirmez votre PIN';
+      return;
+    } else {
+      if (entered === state.pinTemp.join('')) {
+        emp.pin = entered; emp.pinSet = true;
+        showEmployeeScreen(emp);
+      } else {
+        document.getElementById('pin-subtitle').textContent = 'PIN différent. Recommencez.';
+        state.pinBuffer = []; state.pinTemp = []; state.pinStep = 'enter';
+        updateDots();
+      }
+      return;
+    }
+  }
+  if (entered === emp.pin) { showEmployeeScreen(emp); }
+  else { showPinError(); }
+}
+
+function showPinError() {
+  document.getElementById('pin-error').style.display = 'block';
+  state.pinBuffer = []; updateDots();
+  setTimeout(() => document.getElementById('pin-error').style.display = 'none', 2500);
+}
+
+// ============================================================
+// EMPLOYEE SCREEN
+// ============================================================
+async function showEmployeeScreen(emp) {
+  state.currentUser = emp;
+  document.getElementById('emp-name').textContent = emp.nom;
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+  document.getElementById('emp-greeting').textContent = greet + ', ';
+  showScreen('screen-employee');
+  const logoutBtn = document.querySelector('#screen-employee .bnav-item:last-child .bnav-label');
+  if (logoutBtn) logoutBtn.textContent = state.isAdminViewingSalarie ? 'Retour' : 'Quitter';
+  // Charger les données AVANT d'afficher le solde
+  await loadFromSheets();
+  // Récupérer l'emp mis à jour depuis Sheets
+  const empMisAJour = demoData.employees.find(e => e.nom === emp.nom);
+  if (empMisAJour) state.currentUser = empMisAJour;
+  empTab('solde', document.querySelector('#screen-employee .bnav-item'));
+}
+
+function empTab(tab, btn) {
+  document.querySelectorAll('#screen-employee .bnav-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const emp = state.currentUser;
+  const content = document.getElementById('emp-content');
+
+  if (tab === 'solde') {
+    const cpRestants = Math.round((emp.cpTotal - emp.cpPris) * 10) / 10;
+    const samRestants = 5 - emp.samedisPris;
+    const cpPct = Math.min(100, Math.round((emp.cpPris / emp.cpTotal) * 100));
+    const samPct = Math.round((emp.samedisPris / 5) * 100);
+    content.innerHTML = `
+      <div class="total-banner">
+        <div><div class="tb-label">Total annuel</div><div style="font-size:12px;color:#4338ca;margin-top:2px;">Depuis le 1er mai</div></div>
+        <div class="tb-val">30 jours</div>
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <div class="val" style="color:#6366f1;">${cpRestants}</div>
+          <div class="lbl">Jours restants / 30</div>
+        </div>
+        <div class="metric">
+          <div class="val" style="color:#06b6d4;">${emp.cpPris}</div>
+          <div class="lbl">Jours pris</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Congés payés ouvrés</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:13px;color:var(--text2);">${emp.cpPris} pris sur ${emp.cpTotal}</span>
+          <span class="pill pill-blue">${cpRestants} restants</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar" style="width:${cpPct}%;background:linear-gradient(90deg,#6366f1,#818cf8);"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">${cpPct}% utilisés</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Samedis décomptés</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:13px;color:var(--text2);">${emp.samedisPris} pris sur 5</span>
+          <span class="pill pill-amber">${samRestants} restants</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-bar" style="width:${samPct}%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">${samRestants > 0 ? 'Les samedis sont décomptés du solde jusqu\'à 5 max.' : 'Quota de samedis atteint. Les samedis ne sont plus décomptés.'}</div>
+      </div>
+    `;
+  }
+
+  if (tab === 'demande') {
+    content.innerHTML = `
+      <div class="card">
+        <div class="card-title">Nouvelle demande de congé</div>
+        <div id="overlap-alert" class="alert alert-danger">⚠️ Un autre salarié est déjà absent sur cette période !</div>
+        <div id="quota-alert" class="alert alert-danger">⚠️ Vous ne pouvez pas poser plus de 25 jours ouvrés. Il vous reste <span id="quota-restants">${emp.cpTotal - emp.cpPris}</span> jours disponibles.</div>
+        <div id="success-alert" class="alert alert-success">✅ Demande envoyée ! En attente de validation.</div>
+        <div class="form-group">
+          <label class="form-label">Type de congé</label>
+          <select class="form-input form-select" id="type-conge" onchange="toggleDemiJournee()">
+            <option value="journee">Journée(s) complète(s)</option>
+            <option value="demi">Demi-journée</option>
+          </select>
+        </div>
+        <div id="demi-choix" style="display:none;" class="form-group">
+          <label class="form-label">Période</label>
+          <select class="form-input form-select" id="demi-periode">
+            <option value="matin">Matin</option>
+            <option value="aprem">Après-midi</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="label-debut">Date de début</label>
+          <input type="date" class="form-input" id="date-debut" onchange="calcDays()">
+        </div>
+        <div class="form-group" id="group-fin">
+          <label class="form-label">Date de fin</label>
+          <input type="date" class="form-input" id="date-fin" onchange="calcDays()">
+        </div>
+        <div id="calc-result" style="display:none;" class="card" style="background:var(--surface2);">
+          <div class="metrics" style="margin-bottom:0;">
+            <div class="metric"><div class="val" style="color:#6366f1;" id="calc-ouvres">0</div><div class="lbl">Jours ouvrés</div></div>
+            <div class="metric"><div class="val" style="color:#f59e0b;" id="calc-sam">0</div><div class="lbl">Samedis</div></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="soumettreDemande()" id="btn-soumettre" style="margin-top:14px;">Soumettre la demande</button>
+      </div>
+    `;
+  }
+
+  if (tab === 'historique') {
+    const mesDemandes = demoData.demandes.filter(d => d.employe === emp.nom);
+    const items = mesDemandes.length ? mesDemandes.map(d => {
+      const pillClass = d.statut === 'Approuvé' ? 'pill-green' : d.statut === 'Refusé' ? 'pill-red' : 'pill-amber';
+      return `<div class="hist-item">
+        <div>
+          <div class="hist-dates">${d.debut} → ${d.fin}</div>
+          <div class="hist-detail">${d.joursOuvres}j ouvré(s)${d.samedis > 0 ? ' · ' + d.samedis + ' samedi' : ''}${d.description ? ' · ' + d.description : ''}</div>
+        </div>
+        <span class="pill ${pillClass}">${d.statut}</span>
+      </div>`;
+    }).join('') : '<div style="text-align:center;color:var(--text3);padding:24px 0;font-size:14px;">Aucune demande pour l\'instant</div>';
+
+    content.innerHTML = `
+      <div class="card">
+        <div class="card-title">Mes demandes</div>
+        ${items}
+      </div>
+    `;
+  }
+}
+
+
+function toggleDemiJournee() {
+  var type = document.getElementById('type-conge').value;
+  var demiChoix = document.getElementById('demi-choix');
+  var groupFin = document.getElementById('group-fin');
+  var labelDebut = document.getElementById('label-debut');
+  if (type === 'demi') {
+    demiChoix.style.display = 'block';
+    groupFin.style.display = 'none';
+    labelDebut.textContent = 'Date';
+  } else {
+    demiChoix.style.display = 'none';
+    groupFin.style.display = 'block';
+    labelDebut.textContent = 'Date de début';
+  }
+  calcDays();
+}
+
+function calcDays() {
+  const debut = document.getElementById('date-debut')?.value;
+  const typeConge = document.getElementById('type-conge')?.value || 'journee';
+  const emp = state.currentUser;
+
+  // Demi-journée
+  if (typeConge === 'demi') {
+    if (!debut) return;
+    const d1 = new Date(debut);
+    const day = d1.getDay();
+    if (day === 0 || day === 6) return; // pas le weekend
+    const periode = document.getElementById('demi-periode')?.value || 'matin';
+    document.getElementById('calc-ouvres').textContent = '0.5';
+    document.getElementById('calc-sam').textContent = '0';
+    document.getElementById('calc-result').style.display = 'block';
+    const restants = emp.cpTotal - emp.cpPris;
+    if (0.5 > restants) {
+      document.getElementById('quota-restants').textContent = restants;
+      document.getElementById('quota-alert').style.display = 'block';
+      document.getElementById('btn-soumettre').disabled = true;
+      document.getElementById('btn-soumettre').style.opacity = '0.5';
+    } else {
+      document.getElementById('quota-alert').style.display = 'none';
+      document.getElementById('btn-soumettre').disabled = false;
+      document.getElementById('btn-soumettre').style.opacity = '1';
+    }
+    document.getElementById('overlap-alert').style.display = 'none';
+    return;
+  }
+
+  // Journée complète
+  const fin = document.getElementById('date-fin')?.value;
+  if (!debut || !fin) return;
+  const d1 = new Date(debut), d2 = new Date(fin);
+  if (d2 < d1) return;
+  let ouvres = 0, samedis = 0;
+  const cur = new Date(d1);
+  while (cur <= d2) {
+    const day = cur.getDay();
+    if (day === 6) samedis++;
+    else if (day !== 0) ouvres++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  const samEffectifs = Math.min(samedis, Math.max(0, 5 - emp.samedisPris));
+  document.getElementById('calc-ouvres').textContent = ouvres;
+  document.getElementById('calc-sam').textContent = samEffectifs;
+  document.getElementById('calc-result').style.display = 'block';
+
+  // Vérification quota 25j ouvrés
+  const restants = emp.cpTotal - emp.cpPris;
+  if (ouvres > restants) {
+    document.getElementById('quota-restants').textContent = restants;
+    document.getElementById('quota-alert').style.display = 'block';
+    document.getElementById('btn-soumettre').disabled = true;
+    document.getElementById('btn-soumettre').style.opacity = '0.5';
+  } else {
+    document.getElementById('quota-alert').style.display = 'none';
+    document.getElementById('btn-soumettre').disabled = false;
+    document.getElementById('btn-soumettre').style.opacity = '1';
+  }
+
+  // Vérification chevauchement
+  const chkD1 = new Date(debut), chkD2 = new Date(fin);
+  const chevauchements = demoData.demandes.filter(d => {
+    if (d.employe === emp.nom) return false;
+    if (d.statut === 'Refusé' || d.statut === 'Annulé') return false;
+    const dd1 = parseDate(d.debut), dd2 = parseDate(d.fin);
+    return dd1 <= chkD2 && dd2 >= chkD1;
+  });
+  const alertOverlap = document.getElementById('overlap-alert');
+  if (chevauchements.length > 0) {
+    const noms = [...new Set(chevauchements.map(d => d.employe))].join(', ');
+    alertOverlap.textContent = '⚠️ ' + noms + ' est déjà absent(e) sur cette période !';
+    alertOverlap.style.display = 'block';
+  } else {
+    alertOverlap.style.display = 'none';
+  }
+}
+
+function parseDate(str) {
+  const parts = str.split('/');
+  return new Date(parts[2], parts[1]-1, parts[0]);
+}
+
+function soumettreDemande() {
+  const debut = document.getElementById('date-debut')?.value;
+  const typeConge = document.getElementById('type-conge')?.value || 'journee';
+  const emp = state.currentUser;
+  if (!debut) return;
+
+  let fin, joursOuvres, samedis, description;
+
+  if (typeConge === 'demi') {
+    const periode = document.getElementById('demi-periode')?.value || 'matin';
+    fin = debut;
+    joursOuvres = 0.5;
+    samedis = 0;
+    description = 'Demi-journée (' + (periode === 'matin' ? 'Matin' : 'Après-midi') + ')';
+  } else {
+    fin = document.getElementById('date-fin')?.value;
+    if (!fin) return;
+    joursOuvres = parseFloat(document.getElementById('calc-ouvres').textContent) || 0;
+    samedis = parseFloat(document.getElementById('calc-sam').textContent) || 0;
+    description = 'Journée(s) complète(s)';
+  }
+
+  // NE PAS mettre à jour le solde — il ne change qu'à la validation
+  // Ajouter à l'historique local avec statut "En attente"
+  demoData.demandes.push({
+    id: Date.now(), employe: emp.nom,
+    debut: formatDateFR(debut), fin: formatDateFR(fin),
+    joursOuvres, samedis, statut: 'En attente',
+    date: new Date().toLocaleDateString('fr-FR'),
+    description
+  });
+
+  // Sauvegarder dans Google Sheets
+  saveDemandeToSheets(emp.nom, formatDateFR(debut), formatDateFR(fin || debut), joursOuvres, samedis);
+
+  document.getElementById('success-alert').style.display = 'block';
+  document.getElementById('btn-soumettre').innerHTML = '<span class="loader"></span> Envoi...';
+  setTimeout(() => {
+    document.getElementById('btn-soumettre').textContent = 'Soumettre la demande';
+    document.getElementById('success-alert').style.display = 'none';
+    empTab('historique', null);
+  }, 2000);
+}
+
+function formatDateFR(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('fr-FR');
+}
+
+// ============================================================
+// ADMIN SCREEN
+// ============================================================
+function showAdminScreen() {
+  document.getElementById('admin-sub').textContent = demoData.employees.filter(e => e.actif).length + ' salariés actifs';
+  showScreen('screen-admin');
+  adminTab('dashboard', document.querySelector('#screen-admin .bnav-item'));
+}
+
+function adminTab(tab, btn) {
+  document.querySelectorAll('#screen-admin .bnav-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const content = document.getElementById('admin-content');
+  const pending = demoData.demandes.filter(d => d.statut === 'En attente');
+  const approved = demoData.demandes.filter(d => d.statut === 'Approuvé');
+
+  if (tab === 'dashboard') {
+    const empRows = demoData.employees.filter(e => e.actif).map(e => {
+      const initials = e.nom.split(' ').map(n => n[0]).join('');
+      const restants = e.cpTotal - e.cpPris;
+      const couleur = restants <= 0 ? '#ef4444' : restants <= 5 ? '#f59e0b' : '#6366f1';
+      return `<div class="row">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="avatar" style="background:linear-gradient(135deg,#6366f1,#06b6d4);width:36px;height:36px;font-size:12px;">${initials}</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;">${e.nom}</div>
+            <div style="font-size:11px;color:var(--text2);">${e.cpPris}j pris · ${e.samedisPris}/5 samedis</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:16px;font-weight:700;color:${couleur};">${restants}j</div>
+          <div style="font-size:11px;color:var(--text3);">restants</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    content.innerHTML = `
+      <div class="metrics">
+        <div class="metric"><div class="val" style="color:#f59e0b;">${pending.length}</div><div class="lbl">En attente</div></div>
+        <div class="metric"><div class="val" style="color:#22c55e;">${approved.length}</div><div class="lbl">Approuvées</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Soldes de l'équipe</div>
+        ${empRows}
+      </div>
+    `;
+  }
+
+  if (tab === 'demandes') {
+    const pendingCards = pending.length ? pending.map(d => `
+      <div class="demand-card" id="demand-${d.id}">
+        <div class="demand-header">
+          <div class="demand-name">${d.employe}</div>
+          <span class="pill pill-amber">En attente</span>
+        </div>
+        <div class="demand-dates">📅 ${d.debut} → ${d.fin}</div>
+        <div style="font-size:12px;color:var(--text2);">⏱ ${d.joursOuvres}j ouvré(s) · ${d.samedis} samedi(s)</div>
+        <div class="demand-actions">
+          <button class="btn btn-success btn-sm" onclick="validerDemande(${d.id})">✅ Valider</button>
+          <button class="btn btn-danger btn-sm" onclick="refuserDemande(${d.id})">❌ Refuser</button>
+        </div>
+      </div>
+    `).join('') : '<div style="text-align:center;color:var(--text3);padding:24px;font-size:14px;">Aucune demande en attente 🎉</div>';
+
+    content.innerHTML = `
+      <div class="card">
+        <div class="card-title">En attente de validation (${pending.length})</div>
+        ${pendingCards}
+      </div>
+      <div class="card">
+        <div class="card-title">Aperçu Telegram</div>
+        <div class="tg-bubble">
+          <div class="tg-sender">🤖 Bot Congés</div>
+          ${pending.length ? `Nouvelle demande de <strong>${pending[0].employe}</strong><br>${pending[0].debut} → ${pending[0].fin}<br>${pending[0].joursOuvres} jour(s) ouvré(s) · ${pending[0].samedis} samedi(s)<br><br>Solde actuel : ${demoData.employees.find(e => e.nom === pending[0].employe)?.cpTotal - demoData.employees.find(e => e.nom === pending[0].employe)?.cpPris}j restants` : 'Aucune demande en attente.'}
+        </div>
+        ${pending.length ? `<div class="tg-actions"><span class="pill pill-green">✅ /valider</span><span class="pill pill-red">❌ /refuser</span></div>` : ''}
+      </div>
+    `;
+  }
+
+  if (tab === 'salaries') {
+    const empCards = demoData.employees.filter(e => e.actif).map(e => {
+      const initials = e.nom.split(' ').map(n => n[0]).join('');
+      return `<div class="demand-card">
+        <div class="demand-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="avatar" style="background:linear-gradient(135deg,#6366f1,#06b6d4);width:32px;height:32px;font-size:11px;">${initials}</div>
+            <div class="demand-name">${e.nom}</div>
+          </div>
+          <span class="pill ${e.pinSet ? 'pill-green' : 'pill-amber'}">${e.pinSet ? 'PIN défini' : 'Sans PIN'}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);">CP Total : ${e.cpTotal}j · Pris : ${e.cpPris}j · Samedis : ${e.samedisPris}/5</div>
+        <div class="demand-actions">
+          <button class="btn btn-outline btn-sm" onclick="ajusterSolde(${e.id})">Ajuster solde</button>
+          <button class="btn btn-outline btn-sm" style="color:#ef4444;" onclick="resetPin(${e.id})">Reset PIN</button>
+        </div>
+      </div>`;
+    }).join('');
+    content.innerHTML = `
+      <div class="card">
+        <div class="card-title">Gestion des salariés</div>
+        ${empCards}
+        <button class="btn btn-primary" onclick="ajouterSalarie()" style="margin-top:8px;">+ Ajouter un salarié</button>
+        <div style="margin-top:14px;">
+          <div class="card-title" style="margin-bottom:8px;">Voir comme un salarié</div>
+          <select class="form-input form-select" id="vue-salarie-select">
+            ${demoData.employees.filter(e => e.actif).map(e => '<option value="' + e.id + '">' + e.nom + '</option>').join('')}
+          </select>
+          <button class="btn btn-outline" onclick="voirCommeSalarie()" style="margin-top:8px;">👁️ Voir son espace</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Ajustement manuel du solde</div>
+        <div class="form-group">
+          <label class="form-label">Salarié</label>
+          <select class="form-input form-select" id="adj-emp">
+            ${demoData.employees.filter(e => e.actif).map(e => `<option value="${e.id}">${e.nom}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-input form-select" id="adj-type">
+            <option value="cp">Jours ouvrés CP</option>
+            <option value="sam">Samedis</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ajustement</label>
+          <input type="number" class="form-input" id="adj-val" placeholder="ex: +3 ou -2" value="0">
+        </div>
+        <button class="btn btn-primary" onclick="appliquerAjustement()">Appliquer l'ajustement</button>
+        <div id="adj-success" class="alert alert-success" style="margin-top:10px;">✅ Solde mis à jour avec succès !</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Changer mon PIN admin</div>
+        <div class="form-group"><label class="form-label">PIN actuel</label><input type="password" class="form-input" id="pin-actuel" placeholder="••••" maxlength="4"></div>
+        <div class="form-group"><label class="form-label">Nouveau PIN</label><input type="password" class="form-input" id="pin-nouveau" placeholder="••••" maxlength="4"></div>
+        <div class="form-group"><label class="form-label">Confirmer</label><input type="password" class="form-input" id="pin-confirm" placeholder="••••" maxlength="4"></div>
+        <button class="btn btn-primary" onclick="changerPinAdmin()">Changer le PIN</button>
+        <div id="pin-success" class="alert alert-success" style="margin-top:10px;display:none;">✅ PIN changé avec succès !</div>
+        <div id="pin-error-admin" class="alert alert-danger" style="margin-top:10px;display:none;">❌ PIN incorrect ou PINs différents.</div>
+      </div>
+    `;
+  }
+
+  if (tab === 'telegram') {
+    content.innerHTML = `
+      <div class="card">
+        <div class="card-title">Commandes disponibles</div>
+        <div class="cmd-row"><span class="cmd-code">/aide</span><span class="cmd-desc">Toutes les commandes</span></div>
+        <div class="cmd-row"><span class="cmd-code">/soldes</span><span class="cmd-desc">Récap tous les salariés</span></div>
+        <div class="cmd-row"><span class="cmd-code">/solde Prénom</span><span class="cmd-desc">Solde d'un salarié</span></div>
+        <div class="cmd-row"><span class="cmd-code">/liste</span><span class="cmd-desc">Demandes en attente</span></div>
+        <div class="cmd-row"><span class="cmd-code">/valider</span><span class="cmd-desc">Valider dernière demande</span></div>
+        <div class="cmd-row"><span class="cmd-code">/refuser Prénom</span><span class="cmd-desc">Refuser une demande</span></div>
+        <div class="cmd-row"><span class="cmd-code">/ajuster Marie +3</span><span class="cmd-desc">Ajouter des jours</span></div>
+        <div class="cmd-row"><span class="cmd-code">/ajuster Marie -2</span><span class="cmd-desc">Retirer des jours</span></div>
+        <div class="cmd-row"><span class="cmd-code">/ajuster Marie samedis +1</span><span class="cmd-desc">Ajuster samedis</span></div>
+        <div class="cmd-row"><span class="cmd-code">/export</span><span class="cmd-desc">Fichier CSV complet</span></div>
+        <div class="cmd-row"><span class="cmd-code">/historique</span><span class="cmd-desc">10 dernières demandes</span></div>
+        <div class="cmd-row" style="border:none;"><span class="cmd-code">/cancel</span><span class="cmd-desc">Annuler dernière demande</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Statut du bot</div>
+        <div class="row"><span class="row-label">Token configuré</span><span class="pill pill-green">✓ Oui</span></div>
+        <div class="row"><span class="row-label">Google Sheets</span><span class="pill pill-green">✓ Connecté</span></div>
+        <div class="row" style="border:none;"><span class="row-label">Webhook actif</span><span class="pill pill-green">✓ Actif</span></div>
+      </div>
+    `;
+  }
+}
+
+function validerDemande(id) {
+  const d = demoData.demandes.find(d => d.id === id);
+  if (!d) return;
+  d.statut = 'Approuvé';
+  const emp = demoData.employees.find(e => e.nom === d.employe);
+  if (emp) { emp.cpPris += d.joursOuvres; emp.samedisPris = Math.min(5, emp.samedisPris + d.samedis); }
+  document.getElementById('demand-' + id)?.remove();
+  alert('✅ Demande de ' + d.employe + ' validée !\n\nSolde restant : ' + (emp.cpTotal - emp.cpPris) + 'j ouvrés · ' + emp.samedisPris + '/5 samedis pris');
+}
+
+function refuserDemande(id) {
+  const d = demoData.demandes.find(d => d.id === id);
+  if (!d) return;
+  const motif = prompt('Motif du refus (optionnel) :');
+  d.statut = 'Refusé';
+  document.getElementById('demand-' + id)?.remove();
+  alert('❌ Demande refusée.' + (motif ? '\nMotif : ' + motif : ''));
+}
+
+function appliquerAjustement() {
+  const empId = parseInt(document.getElementById('adj-emp').value);
+  const type = document.getElementById('adj-type').value;
+  const val = parseInt(document.getElementById('adj-val').value);
+  const emp = demoData.employees.find(e => e.id === empId);
+  if (!emp || isNaN(val)) return;
+  if (type === 'cp') emp.cpPris = Math.max(0, emp.cpPris - val);
+  if (type === 'sam') emp.samedisPris = Math.max(0, Math.min(5, emp.samedisPris + val));
+  const s = document.getElementById('adj-success');
+  s.style.display = 'block';
+  setTimeout(() => s.style.display = 'none', 2500);
+}
+
+function voirCommeSalarie() {
+  const select = document.getElementById('vue-salarie-select');
+  if (!select) return;
+  const empId = parseInt(select.value);
+  voirCommeSalarieId(empId);
+}
+
+function voirCommeSalarieId(empId) {
+  const emp = demoData.employees.find(e => e.id === empId);
+  if (!emp) return;
+  state.isAdminViewingSalarie = true;
+  showEmployeeScreen(emp);
+}
+
+function modifierSalarie(id) {
+  const emp = demoData.employees.find(e => e.id === id);
+  if (!emp) return;
+  const nouveauNom = prompt('Nom du salarié :', emp.nom);
+  if (!nouveauNom) return;
+  const nouveauTotal = prompt('CP Total (jours/an) :', emp.cpTotal);
+  if (!nouveauTotal) return;
+  emp.nom = nouveauNom;
+  emp.cpTotal = parseInt(nouveauTotal);
+  alert('✅ Salarié mis à jour !');
+  adminTab('salaries', null);
+}
+
+function supprimerSalarie(id) {
+  const emp = demoData.employees.find(e => e.id === id);
+  if (!emp) return;
+  if (!confirm('Supprimer ' + emp.nom + ' ? Cette action est irréversible.')) return;
+  emp.actif = false;
+  alert('✅ Salarié supprimé.');
+  adminTab('salaries', null);
+}
+
+function ajusterSolde(id) {
+  ajusterSoldeRapide(id);
+}
+
+function ajusterSoldeRapide(id) {
+  var emp = demoData.employees.find(function(e) { return e.id === id; });
+  if (!emp) return;
+  var type = prompt('Ajuster pour ' + emp.nom + ' - Tapez 1 ou 2 : 1=Jours CP pris  2=Samedis pris');
+  if (!type) return;
+  if (type === '1') {
+    var val = prompt('Jours CP pris actuellement : ' + emp.cpPris + ' - Nouveau nombre :');
+    if (val === null) return;
+    var ancienCp = emp.cpPris;
+    emp.cpPris = parseFloat(val);
+    var diff = ancienCp - emp.cpPris;
+    // Sauvegarder dans Google Sheets via /ajuster
+    fetch(SCRIPT_URL + '?action=ajuster&employe=' + encodeURIComponent(emp.nom) + '&type=cp&valeur=' + emp.cpPris);
+    alert('OK ! ' + emp.nom + ' : ' + emp.cpPris + 'j pris / ' + (emp.cpTotal - emp.cpPris) + 'j restants');
+  } else if (type === '2') {
+    var val2 = prompt('Samedis pris actuellement : ' + emp.samedisPris + ' - Nouveau nombre :');
+    if (val2 === null) return;
+    emp.samedisPris = parseInt(val2);
+    // Sauvegarder dans Google Sheets
+    fetch(SCRIPT_URL + '?action=ajuster&employe=' + encodeURIComponent(emp.nom) + '&type=samedis&valeur=' + emp.samedisPris);
+    alert('OK ! ' + emp.nom + ' : ' + emp.samedisPris + '/5 samedis pris');
+  }
+  adminTab('salaries', null);
+}
+
+function ajouterSalarie() {
+  const nom = prompt('Nom complet du salarié :');
+  if (!nom) return;
+  demoData.employees.push({ id: Date.now(), nom, pin: '', pinSet: false, cpTotal: 30, cpPris: 0, samedisPris: 0, actif: true });
+  renderEmployeeList();
+  adminTab('salaries', null);
+}
+
+function resetPin(id) {
+  const emp = demoData.employees.find(e => e.id === id);
+  if (!emp) return;
+  if (!confirm('Réinitialiser le PIN de ' + emp.nom + ' ?')) return;
+  emp.pin = ''; emp.pinSet = false;
+  alert('PIN réinitialisé. ' + emp.nom + ' devra choisir un nouveau PIN à sa prochaine connexion.');
+}
+
+
+function changerPinAdmin() {
+  var actuel = document.getElementById('pin-actuel').value;
+  var nouveau = document.getElementById('pin-nouveau').value;
+  var confirm = document.getElementById('pin-confirm').value;
+  var s = document.getElementById('pin-success');
+  var e = document.getElementById('pin-error-admin');
+  s.style.display = 'none'; e.style.display = 'none';
+  if (actuel !== demoData.admin.pin || nouveau !== confirm || nouveau.length !== 4) {
+    e.style.display = 'block';
+    setTimeout(() => e.style.display = 'none', 3000);
+    return;
+  }
+  demoData.admin.pin = nouveau;
+  document.getElementById('pin-actuel').value = '';
+  document.getElementById('pin-nouveau').value = '';
+  document.getElementById('pin-confirm').value = '';
+  s.style.display = 'block';
+  setTimeout(() => s.style.display = 'none', 3000);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderEmployeeList();
+loadFromSheets(); // Charger les données depuis Google Sheets
+</script>
+</body>
+</html>
