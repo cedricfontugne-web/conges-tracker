@@ -391,11 +391,25 @@ async function loadFromSheets() {
         // A=ID(0), B=Salarié(1), C=Début(2), D=Fin(3), E=Jours(4), F=Statut(5), G=Date(6), H=Samedis(7)
         const fmt = (v) => {
           if (!v) return '';
+          // Si c'est déjà une string au format dd/mm/yyyy
+          if (typeof v === 'string' && v.match(/^\d{2}\/\d{2}\/\d{4}$/)) return v;
+          // Si c'est une string ISO
+          if (typeof v === 'string' && v.includes('T')) {
+            const d = new Date(v);
+            if (!isNaN(d.getTime())) return d.toLocaleDateString('fr-FR');
+          }
+          // Si c'est un objet Date ou timestamp
+          if (typeof v === 'object' || typeof v === 'number') {
+            const d = new Date(v);
+            if (!isNaN(d.getTime()) && d.getFullYear() > 1900) return d.toLocaleDateString('fr-FR');
+          }
           if (typeof v === 'string') return v;
-          const d = new Date(v);
-          if (!isNaN(d.getTime())) return d.toLocaleDateString('fr-FR');
-          return String(v);
+          return '';
         };
+        // Samedis : si c'est une date (1899), c'est 0
+        const samVal = r[7];
+        const samNum = (typeof samVal === 'number' && samVal < 100) ? samVal : 
+                       (typeof samVal === 'string' && !isNaN(parseFloat(samVal)) && parseFloat(samVal) < 100) ? parseFloat(samVal) : 0;
         return {
           id: r[0],
           employe: r[1],
@@ -404,7 +418,7 @@ async function loadFromSheets() {
           joursOuvres: parseFloat(r[4]) || 0,
           statut: typeof r[5] === 'string' ? r[5] : 'En attente',
           date: fmt(r[6]),
-          samedis: parseFloat(r[7]) || 0
+          samedis: samNum
         };
       });
     }
