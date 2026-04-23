@@ -917,6 +917,19 @@ function adminTab(tab, btn) {
       </div>
     `).join('') : '<div style="text-align:center;color:var(--text3);padding:24px;font-size:14px;">Aucune demande en attente 🎉</div>';
 
+    const historique = demoData.demandes.filter(d => d.statut === 'Approuvé' || d.statut === 'Refusé' || d.statut === 'Annulé');
+    const histCards = historique.length ? historique.slice().reverse().map(d => {
+      const pillClass = d.statut === 'Approuvé' ? 'pill-green' : d.statut === 'Refusé' ? 'pill-red' : 'pill-amber';
+      const icon = d.statut === 'Approuvé' ? '✅' : d.statut === 'Refusé' ? '❌' : '🚫';
+      return `<div class="hist-item">
+        <div>
+          <div class="hist-dates">${d.employe}</div>
+          <div class="hist-detail">${d.debut} → ${d.fin} · ${d.joursOuvres}j</div>
+        </div>
+        <span class="pill ${pillClass}">${icon} ${d.statut}</span>
+      </div>`;
+    }).join('') : '<div style="text-align:center;color:var(--text3);padding:16px;font-size:13px;">Aucun historique</div>';
+
     content.innerHTML = `
       <div class="card">
         <div class="card-title">En attente de validation (${pending.length})</div>
@@ -929,6 +942,10 @@ function adminTab(tab, btn) {
           ${pending.length ? `Nouvelle demande de <strong>${pending[0].employe}</strong><br>${pending[0].debut} → ${pending[0].fin}<br>${pending[0].joursOuvres} jour(s) ouvré(s) · ${pending[0].samedis} samedi(s)<br><br>Solde actuel : ${demoData.employees.find(e => e.nom === pending[0].employe)?.cpTotal - demoData.employees.find(e => e.nom === pending[0].employe)?.cpPris}j restants` : 'Aucune demande en attente.'}
         </div>
         ${pending.length ? `<div class="tg-actions"><span class="pill pill-green">✅ /valider</span><span class="pill pill-red">❌ /refuser</span></div>` : ''}
+      </div>
+      <div class="card">
+        <div class="card-title">Historique des demandes</div>
+        ${histCards}
       </div>
     `;
   }
